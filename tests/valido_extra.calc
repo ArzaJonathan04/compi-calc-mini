@@ -1,0 +1,7 @@
+a = 1;
+b = 2 ;
+c = (a + b) * (a - b) / 2;
+
+	d = ((a + b) * 3) - c;
+print d;
+print (a + b) * c;
