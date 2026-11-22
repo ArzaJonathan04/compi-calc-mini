@@ -2,3 +2,4 @@
 
 ## Integrantes
 - Jonathan
+- Danilo
