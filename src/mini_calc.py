@@ -118,3 +118,94 @@ class Lexer:
 
         tokens.append(Token("EOF", "", self.linea, self.columna))
         return tokens
+
+
+class Parser:
+   
+    def __init__(self, tokens: List[Token]):
+        self.tokens = tokens
+        self.actual_idx = 0
+
+    @property
+    def token_actual(self) -> Token:
+        return self.tokens[self.actual_idx]
+
+    def _error_sintactico(self, mensaje: str) -> ParserError:
+        tok = self.token_actual
+        return ParserError(tok.linea, tok.columna, mensaje)
+
+    def _consumir(self, tipo_esperado: str) -> Token:
+        tok = self.token_actual
+        if tok.tipo == tipo_esperado:
+            self.actual_idx += 1
+            return tok
+        raise self._error_sintactico(
+            f"Se esperaba {tipo_esperado}, pero se encontró {tok.tipo} ('{tok.lexema}')."
+        )
+
+    def parsear(self) -> None:
+        self.programa()
+
+    def programa(self) -> None:
+        self.lista_sentencias()
+        self._consumir("EOF")
+
+    def lista_sentencias(self) -> None:
+        while self.token_actual.tipo in ("ID", "KW_PRINT"):
+            self.sentencia()
+
+    def sentencia(self) -> None:
+        tok = self.token_actual
+        if tok.tipo == "ID":
+            self._consumir("ID")
+            self._consumir("OP_ASSIGN")
+            self.expresion()
+            self._consumir("PUNCT_SEMI")
+        elif tok.tipo == "KW_PRINT":
+            self._consumir("KW_PRINT")
+            self.expresion()
+            self._consumir("PUNCT_SEMI")
+        else:
+            raise self._error_sintactico(
+                f"Sentencia no válida: se esperaba 'ID' o 'print', pero se encontró '{tok.lexema}'."
+            )
+
+    def expresion(self) -> None:
+        self.termino()
+        self.expresion_prima()
+
+    def expresion_prima(self) -> None:
+        while self.token_actual.tipo in ("OP_ADD", "OP_SUB"):
+            if self.token_actual.tipo == "OP_ADD":
+                self._consumir("OP_ADD")
+            else:
+                self._consumir("OP_SUB")
+            self.termino()
+
+    def termino(self) -> None:
+        self.factor()
+        self.termino_prima()
+
+    def termino_prima(self) -> None:
+        while self.token_actual.tipo in ("OP_MUL", "OP_DIV"):
+            if self.token_actual.tipo == "OP_MUL":
+                self._consumir("OP_MUL")
+            else:
+                self._consumir("OP_DIV")
+            self.factor()
+
+    def factor(self) -> None:
+        tok = self.token_actual
+        if tok.tipo == "PUNCT_LPAREN":
+            self._consumir("PUNCT_LPAREN")
+            self.expresion()
+            self._consumir("PUNCT_RPAREN")
+        elif tok.tipo == "ID":
+            self._consumir("ID")
+        elif tok.tipo == "NUM":
+            self._consumir("NUM")
+        else:
+            raise self._error_sintactico(
+                f"Factor no válido: se esperaba '(', 'ID' o 'NUM', pero se encontró '{tok.lexema}'."
+            )
+
