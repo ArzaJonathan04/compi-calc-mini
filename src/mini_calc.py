@@ -209,3 +209,40 @@ class Parser:
                 f"Factor no válido: se esperaba '(', 'ID' o 'NUM', pero se encontró '{tok.lexema}'."
             )
 
+
+def analizar_archivo(ruta_archivo: str) -> int:
+    try:
+        with open(ruta_archivo, "r", encoding="utf-8") as f:
+            codigo = f.read()
+    except OSError as exc:
+        print(f"Error al abrir el archivo '{ruta_archivo}': {exc}")
+        return 1
+
+    print("=== INICIO DE ANÁLISIS LÉXICO ===")
+    try:
+        lexer = Lexer(codigo)
+        tokens = lexer.tokenizar()
+        for tok in tokens:
+            if tok.tipo != "EOF":
+                print(tok)
+    except LexerError as err:
+        print(err)
+        return 1
+
+    print("\n=== INICIO DE ANÁLISIS SINTÁCTICO ===")
+    try:
+        parser = Parser(tokens)
+        parser.parsear()
+        print("El análisis sintáctico finalizó exitosamente sin errores.")
+        return 0
+    except ParserError as err:
+        print(err)
+        return 1
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Uso: python src/mini_calc.py <archivo.calc>")
+        sys.exit(1)
+    sys.exit(analizar_archivo(sys.argv[1]))
+
