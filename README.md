@@ -2,3 +2,8 @@
 
 ## Integrantes
 - Jonathan
+- Danilo
+- Andrea
+- Victor
+
+  
