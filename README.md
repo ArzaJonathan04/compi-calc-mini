@@ -6,4 +6,4 @@
 - Andrea
 - Victor
 - Beatriz
-  
+- Magali
